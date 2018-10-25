@@ -32,15 +32,40 @@ def record_alert(event):
     return
 
 def reply(event):
+    global alerts
     user_id = event['user']
-    text = event['text']
+    text = event['text'].strip(config.BOT_USER_NAME+' ')
     channel_id = event['channel']   
+
+    if re.search('(alert report)',text):
+        if alerts:
+            alerts_sorted = sorted(alerts, key=lambda k: k['occurrences']) 
+            report = ''
+            for alert in alerts_sorted:
+                report = report+'Alert: '+alert['name']+' - Occurrences:'+str(alert['occurrences'])+'\n'
+            slack.client.api_call(
+                'chat.postMessage',
+                channel=channel_id,
+                text='Here are all the alerts I\'ve recorded so far: ```'+report+'```',
+                as_user=True,
+                mrkdwn=True
+            )
+        else:
+            slack.client.api_call(
+                'chat.postMessage',
+                channel=channel_id,
+                text='No alerts recorded so far',
+                as_user=True,
+                mrkdwn=True
+            )
+        return
 
     slack.client.api_call(
         'chat.postMessage',
         channel=channel_id,
-        text='Hello '+get_username_by_id(user_id),
-        as_user=True
+        text='Not entirely sure what you mean '+get_username_by_id(user_id),
+        as_user=True,
+        mrkdown=True
     )
     return
 
