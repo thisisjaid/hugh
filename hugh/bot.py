@@ -2,7 +2,7 @@ import re
 import logging
 import time
 
-from . import config, slack
+from . import config, slack, brain
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -63,7 +63,7 @@ def reply(event):
     slack.client.api_call(
         'chat.postMessage',
         channel=channel_id,
-        text='Not entirely sure what you mean '+get_username_by_id(user_id),
+        text=brain.backtalk(text),
         as_user=True,
         mrkdown=True
     )
@@ -77,19 +77,20 @@ def understand(event):
 
     if event['type'] == 'message':
         if 'subtype' in event and event['subtype'] == 'bot_message':
-            bot_id = event['username']
-            if bot_id == 'sensu-alerts':
+            if event['username'] == 'sensu-alerts':
                 record_alert(event)
         else:
             user_id = event['user']
+            text = event['text']
+            channel_id = event['channel']
 
-        text = event['text']
-        channel_id = event['channel']
-
-        if re.match(config.BOT_USER_NAME,text):
-            logger.info('Someone is talking to me')
-            reply(event)
-
+            if re.match(config.BOT_USER_NAME,text):
+                logger.info('Someone is talking to me')
+                reply(event)
+            else:
+                if get_username_by_id(event['user']) != 'hugh':
+                    logger.info('Learning message - '+text)
+                    brain.learn(text)
     return
 
 def run():
@@ -118,7 +119,3 @@ def run():
         except KeyboardInterrupt:
             logger.info('Exiting gracefully')
             return
-
-
-
-
