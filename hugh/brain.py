@@ -1,4 +1,5 @@
 import re
+import logging
 from .cobe.brain import Brain
 from .config import *
 
@@ -13,8 +14,10 @@ def filter(message):
     message = re.sub('\<[^\<]+\>', '', message) #remove links
     message = message.strip() # remove unneeded spaces
     valid = False
-    if len(message) > 5 and len(message) <= 100:
+    if len(message) > 5:
         valid = True
+    if re.search('(hubot)',message):
+        valid = False
     return valid,message
 
 def learn(message):
@@ -22,6 +25,7 @@ def learn(message):
     valid, message = filter(message)
     if not valid:
         return
+    logger.info('Learning message - '+text)
     hugh.learn(message)
 
 def backtalk(message):
