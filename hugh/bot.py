@@ -89,7 +89,6 @@ def understand(event):
                 reply(event)
             else:
                 if get_username_by_id(event['user']) != 'hugh':
-                    logger.info('Learning message - '+text)
                     brain.learn(text)
     return
 
