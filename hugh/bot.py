@@ -35,11 +35,11 @@ def reply(event):
     global alerts
     user_id = event['user']
     text = event['text'].strip(config.BOT_USER_NAME+' ')
-    channel_id = event['channel']   
+    channel_id = event['channel']
 
     if re.search('(alert report)',text):
         if alerts:
-            alerts_sorted = sorted(alerts, key=lambda k: k['occurrences']) 
+            alerts_sorted = sorted(alerts, key=lambda k: k['occurrences'])
             report = ''
             for alert in alerts_sorted:
                 report = report+'Alert: '+alert['name']+' - Occurrences:'+str(alert['occurrences'])+'\n'
@@ -78,15 +78,14 @@ def understand(event):
     if event['type'] == 'message':
         if 'subtype' in event and event['subtype'] == 'bot_message':
             bot_id = event['username']
-        else:
-            user_id = event['user']
-        text = event['text']
-        channel_id = event['channel']   
-    
-        if 'subtype' in event and event['subtype'] == 'bot_message':
             if bot_id == 'sensu-alerts':
                 record_alert(event)
-        
+        else:
+            user_id = event['user']
+
+        text = event['text']
+        channel_id = event['channel']
+
         if re.match(config.BOT_USER_NAME,text):
             logger.info('Someone is talking to me')
             reply(event)
